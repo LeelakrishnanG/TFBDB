@@ -1,0 +1,8 @@
+Number of records found in NDC file  :  1751
+Number of unmatching records found between in NDC file and DB  :  0
+-----------------------------------------------------------------------------------------------
+Number of records found in NDC file  :  1750
+Number of unmatching records found between in NDC file and DB  :  0
+-----------------------------------------------------------------------------------------------
+Number of records found in NDC file  :  1750
+Number of unmatching records found between in NDC file and DB  :  0
