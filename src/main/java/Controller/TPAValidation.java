@@ -1,11 +1,17 @@
 package Controller;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +20,10 @@ import Service.TPACheck;
 import Service.TPALocationDateComparator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.core.io.UrlResource;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/tpa")
@@ -31,9 +41,12 @@ public class TPAValidation {
     private TPALocationDateComparator TPALocationCompare;
 
     @PostMapping("/TPAvalidation")
-    public void testingFile(@RequestParam("testFile") MultipartFile file1,
+    public ResponseEntity<Resource> TPAValidator(@RequestParam("testFile") MultipartFile file1,
                             @RequestParam("dbFile") MultipartFile file2) throws IOException
     {
+        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String fileName = "TPAResults"+dateTime+".txt";
+
         System.out.println("Validating added and removed TPAs ");
         XSSFWorkbook wb = new XSSFWorkbook(file1.getInputStream());
         XSSFSheet sheet = wb.getSheetAt(0);
@@ -71,16 +84,34 @@ public class TPAValidation {
             }
         }
 
-        WriteFile.WritetxtFile("TPAResult.txt", "-----------------------------------------------------------------------------------------------\n");
+        WriteFile.WritetxtFile(fileName, "-----------------------------------------------------------------------------------------------\n");
         Message = "Number of record found in Covered Entity sheet with \"Please Add\"  :  " + add + "\n";
-        WriteFile.WritetxtFile("TPAResult.txt", Message, addList);
-        WriteFile.WritetxtFile("TPAResult.txt", "-----------------------------------------------------------------------------------------------\n");
+        WriteFile.WritetxtFile(fileName, Message, addList);
+        WriteFile.WritetxtFile(fileName, "-----------------------------------------------------------------------------------------------\n");
         Message = "Number of record found in Covered Entity sheet with \"Please Remove\"  :  " + remove + "\n";
-        WriteFile.WritetxtFile("TPAResult.txt", Message, removeList);
-        WriteFile.WritetxtFile("TPAResult.txt", "-----------------------------------------------------------------------------------------------\n");
+        WriteFile.WritetxtFile(fileName, Message, removeList);
+        WriteFile.WritetxtFile(fileName, "-----------------------------------------------------------------------------------------------\n");
 
         wb.close();
 
-        TPALocationCompare.compareTPARecords(file1, file2);
+        TPALocationCompare.compareTPARecords(file1, file2, fileName);
+
+        try{
+            Path filePath = Paths.get(".\\Output\\"+fileName);
+            Resource resource = new UrlResource(filePath.toUri());
+          
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+
+        }
+         catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity
+                .status(500)
+                .header(HttpHeaders.CONTENT_TYPE, "text/plain")
+                .body(null); 
+        }
     }
 }

@@ -19,8 +19,6 @@ import Service.DataComparator;
 @RestController
 @RequestMapping("/api/ndc")
 public class NDCValidation {
-	
-
 
     @PostMapping(
         value = "/NDCvalidation")

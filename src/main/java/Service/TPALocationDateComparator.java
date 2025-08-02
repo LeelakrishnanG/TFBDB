@@ -18,7 +18,7 @@ public class TPALocationDateComparator {
     private String value1, value2, value3;
     private ArrayList<String> unmatchrecords = new ArrayList<>();
 
-    public void compareTPARecords(MultipartFile coveredEntityFile, MultipartFile tpaDbFile) throws IOException {
+    public void compareTPARecords(MultipartFile coveredEntityFile, MultipartFile tpaDbFile, String fileName) throws IOException {
     	Map<String, Map<String, List<String>>> tpaMap = new HashMap<>();
 
     	// Build the map from Covered Entity File
@@ -61,7 +61,7 @@ public class TPALocationDateComparator {
     	    }
     	}
 
-        WriteFile.WritetxtFile("TPAResult.txt", "Mismatching Records between Covered Entity file and TPALOCATION table data:\n", unmatchrecords);
+        WriteFile.WritetxtFile(fileName, "Mismatching Records between Covered Entity file and TPALOCATION table data:\n", unmatchrecords);
     }
 
     private boolean TPAComparison(String TPA, String LocationID, String Date, MultipartFile tpaDbFile) throws IOException {
